@@ -1,0 +1,273 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'leaflet/dist/leaflet.css';
+
+/* ── Google Fonts ────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── CSS variables ───────────────────────────────────────────────── */
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --font-noto:  'Noto Sans Bengali', sans-serif;
+  --lal:        #B5002E;
+  --zari:       #C9A84C;
+  --muslin:     #FFFCF7;
+  --ink:        #1A0505;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lal) transparent;
+}
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--lal); border-radius: 2px; }
+
+body {
+  background: var(--muslin);
+  color: var(--ink);
+  font-family: var(--font-inter);
+}
+
+/* ── Leaflet overrides ───────────────────────────────────────────── */
+.leaflet-container {
+  background: #F0EBE3 !important;
+  font-family: var(--font-inter);
+}
+
+/* Warm tint on map tiles */
+.leaflet-tile-pane {
+  filter: sepia(8%) saturate(0.95) brightness(1.02);
+}
+
+.leaflet-control-attribution {
+  background: rgba(255,252,247,0.85) !important;
+  color: #9B6060 !important;
+  font-size: 9px !important;
+  border-top: 1px solid #E8CECE !important;
+}
+.leaflet-control-attribution a { color: var(--lal) !important; }
+
+/* Zoom control */
+.leaflet-control-zoom a {
+  background: var(--muslin) !important;
+  color: var(--lal) !important;
+  border-color: #E8CECE !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #FFF0F2 !important;
+}
+
+/* ── Par border decoration ───────────────────────────────────────── */
+/* The saree "par" (border) — used as a top-edge accent stripe */
+.par-top {
+  border-top: 3px solid var(--lal);
+  background: linear-gradient(
+    to bottom,
+    var(--lal) 0px,
+    var(--lal) 3px,
+    var(--zari) 3px,
+    var(--zari) 4.5px,
+    transparent 4.5px
+  );
+  background-size: 100% 4.5px;
+  background-repeat: no-repeat;
+}
+
+.par-left {
+  border-left: 3px solid var(--lal);
+  padding-left: 10px;
+}
+
+/* Decorative divider mimicking saree border texture */
+.par-divider {
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    var(--lal) 0%,
+    var(--lal) calc(100% - 1px),
+    var(--zari) calc(100% - 1px)
+  );
+  border-top: 1px solid var(--zari);
+}
+
+/* ── Pandal dot markers ──────────────────────────────────────────── */
+.pandal-dot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.pandal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #B5002E;
+  border: 2px solid white;
+  box-shadow: 0 1px 6px rgba(181,0,46,0.35);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* Only scale up on hover — the label visibility is zoom-controlled */
+.pandal-dot:hover {
+  width: 13px;
+  height: 13px;
+  box-shadow: 0 0 0 4px rgba(181,0,46,0.15), 0 2px 8px rgba(181,0,46,0.4);
+}
+
+.pandal-dot.selected {
+  width: 14px;
+  height: 14px;
+  background: #7A0020;
+  border-width: 2.5px;
+  box-shadow: 0 0 0 6px rgba(181,0,46,0.2), 0 2px 10px rgba(181,0,46,0.5);
+}
+
+/* Labels hidden by default — shown when map has .show-labels class (zoom ≥ 14) */
+.pandal-dot-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #1A0505;
+  background: rgba(255,252,247,0.94);
+  border: 1px solid rgba(181,0,46,0.25);
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-top: 3px;
+  white-space: nowrap;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  pointer-events: none;
+  display: none;           /* hidden at low zoom */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* When the map container has .show-labels — zoom ≥ 14 */
+.show-labels .pandal-dot-label {
+  display: block;
+  opacity: 1;
+}
+
+/* ── User location marker — distinct blue GPS dot ────────────────── */
+.user-location-wrap {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+/* Outer pulsing accuracy ring */
+.user-location-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.15);
+  border: 1.5px solid rgba(37,99,235,0.3);
+  transform: translate(-50%, -50%);
+  animation: gps-pulse 2.4s ease-out infinite;
+}
+
+/* Inner solid blue dot */
+.user-location-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  background: #2563EB;
+  border: 3px solid white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.5), 0 0 0 2px rgba(37,99,235,0.2);
+  z-index: 2;
+}
+
+/* Direction cone (optional visual cue) */
+.user-location-cone {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid rgba(37,99,235,0.5);
+  transform: translate(-50%, -150%);
+  z-index: 1;
+}
+
+@keyframes gps-pulse {
+  0%   { transform: translate(-50%,-50%) scale(0.6); opacity: 0.9; }
+  70%  { transform: translate(-50%,-50%) scale(1.6); opacity: 0;   }
+  100% { transform: translate(-50%,-50%) scale(1.6); opacity: 0;   }
+}
+
+/* ── Amenity markers ─────────────────────────────────────────────── */
+.amenity-marker-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.amenity-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  flex-shrink: 0;
+}
+
+.amenity-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #1A0505;
+  background: rgba(255,252,247,0.96);
+  border: 1px solid #E8CECE;
+  border-radius: 5px;
+  padding: 1.5px 6px;
+  margin-top: 2px;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  pointer-events: none;
+  display: block;
+}
+
+/* ── Popups ──────────────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: var(--muslin) !important;
+  border: 1.5px solid #E8CECE !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(181,0,46,0.12) !important;
+}
+.leaflet-popup-tip { background: var(--muslin) !important; }
+.leaflet-popup-content { color: var(--ink) !important; font-size: 12px !important; }
+
+/* ── Drag handle ─────────────────────────────────────────────────── */
+.drag-handle {
+  width: 36px; height: 3px;
+  background: #E8CECE;
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+/* ── PWA safe area ───────────────────────────────────────────────── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
+
+/* ── Route polyline glow ─────────────────────────────────────────── */
+.leaflet-interactive[stroke='#B5002E'] {
+  filter: drop-shadow(0 0 4px rgba(181,0,46,0.35));
+}
+
