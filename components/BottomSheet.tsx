@@ -118,7 +118,7 @@ export default function BottomSheet({
         HEIGHT_CLASS[height]
       )}
       style={{
-        bottom: 'calc(58px + env(safe-area-inset-bottom, 0px))',
+        bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))',
         boxShadow: '0 -4px 24px rgba(26,5,5,0.08)',
       }}
       onTouchStart={onTouchStart}

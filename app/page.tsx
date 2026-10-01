@@ -14,7 +14,7 @@ const MapView = dynamic(() => import('@/components/MapView'), {
 
 export default function Home() {
   return (
-    <main className="h-screen w-screen overflow-hidden bg-muslin">
+    <main className="fixed inset-0 overflow-hidden bg-muslin">
       <MapView />
     </main>
   );

@@ -19,7 +19,7 @@ interface Props {
 export default function BottomNav({ active, onChange }: Props) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[1002] bg-muslin/95 backdrop-blur-md border-t border-inkFaint shadow-card safe-bottom select-none">
-      <div className="flex max-w-md mx-auto">
+      <div className="flex max-w-md mx-auto py-0.5">
         {TABS.map(({ id, Icon, label }) => {
           const isActive = active === id;
           return (
@@ -27,19 +27,19 @@ export default function BottomNav({ active, onChange }: Props) {
               key={id}
               onClick={() => onChange(id)}
               className={clsx(
-                'flex-1 flex flex-col items-center justify-center py-2.5 gap-1 relative transition-all',
+                'flex-1 flex flex-col items-center justify-center py-1.5 gap-0.5 relative transition-all',
                 isActive ? 'text-lal font-semibold' : 'text-inkMute hover:text-inkDark'
               )}
             >
               <div
                 className={clsx(
-                  'px-4 py-1 rounded-full transition-all flex items-center justify-center',
+                  'px-3.5 py-0.5 rounded-full transition-all flex items-center justify-center',
                   isActive ? 'bg-lalPale text-lal' : 'text-inkMute'
                 )}
               >
-                <Icon size={19} strokeWidth={isActive ? 2.4 : 1.8} />
+                <Icon size={18} strokeWidth={isActive ? 2.4 : 1.8} />
               </div>
-              <span className={clsx('text-[11px] leading-tight tracking-tight', isActive ? 'text-lal font-bold' : 'text-inkMute')}>
+              <span className={clsx('text-[10px] leading-tight tracking-tight', isActive ? 'text-lal font-bold' : 'text-inkMute')}>
                 {label}
               </span>
             </button>

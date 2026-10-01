@@ -696,7 +696,7 @@ export default function MapView() {
   );
 
   return (
-    <div className="relative h-full h-[100dvh] w-full w-screen overflow-hidden bg-muslin">
+    <div className="relative w-full h-full overflow-hidden bg-muslin">
       {/* Full-screen Google Maps canvas */}
       <div ref={mapContainerRef} className="absolute inset-0 z-0" />
 
@@ -721,8 +721,8 @@ export default function MapView() {
         )}
         style={{
           bottom: selectedPandal || selectedPlace || activeTab === 'route'
-            ? 'calc(50vh + 68px + env(safe-area-inset-bottom, 0px))'
-            : 'calc(224px + env(safe-area-inset-bottom, 0px))',
+            ? 'calc(50vh + 62px + env(safe-area-inset-bottom, 0px))'
+            : 'calc(218px + env(safe-area-inset-bottom, 0px))',
         }}
         title="Re-center to your location"
         aria-label="Re-center to your location"
