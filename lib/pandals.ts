@@ -1,4 +1,5 @@
 import { Pandal } from './types';
+import { getKolkataHour } from './popular-times';
 
 export const KOLKATA_CENTER: [number, number] = [22.5726, 88.3639];
 export const DEFAULT_ZOOM = 13;
@@ -1351,7 +1352,7 @@ export function crowdLevel(count: number): {
 
 /** Get simulated point-level crowd count near a pandal based on time */
 export function getSimulatedCrowdForPandal(pandalId: string): number {
-  const hour = new Date().getHours();
+  const hour = getKolkataHour();
   const isEvening = hour >= 18 || hour <= 2;
   const isPeak = (hour >= 20 && hour <= 23) || hour <= 1;
   const base = isPeak ? 180 : isEvening ? 100 : 35;

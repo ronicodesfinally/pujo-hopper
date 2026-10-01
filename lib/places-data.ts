@@ -1,5 +1,6 @@
 import type { SearchedPlace } from './types';
 import { policeBooths, officialParkingZones, indianOilStations } from './police-guide';
+import { getKolkataHour } from './popular-times';
 
 export interface VerifiedPlaceItem {
   name: string;
@@ -720,7 +721,7 @@ export const VERIFIED_KOLKATA_PLACES: VerifiedPlaceItem[] = [
 
 // Helper to determine simulated busyness
 export function getSimulatedBusyness(): { label: string; isBusy: boolean } {
-  const hour = new Date().getHours();
+  const hour = getKolkataHour();
   if (hour >= 19 && hour <= 23) return { label: 'Peak Rush · Usually very busy', isBusy: true };
   if (hour >= 13 && hour <= 15) return { label: 'Lunch Rush · Moderately busy', isBusy: true };
   if (hour >= 10 && hour <= 18) return { label: 'Usually not busy', isBusy: false };

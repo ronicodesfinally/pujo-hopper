@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { policeBooths, officialParkingZones, indianOilStations } from '@/lib/police-guide';
 import { searchAllPlaces } from '@/lib/places-data';
+import { getKolkataHour } from '@/lib/popular-times';
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyAbhrgPRQVLCpYojXWwrWk7_oRpSZFOjxM';
 
@@ -78,7 +79,7 @@ const VERIFIED_KOLKATA_PLACES: Record<string, Array<{
 };
 
 function getSimulatedBusyness(): { label: string; isBusy: boolean } {
-  const hour = new Date().getHours();
+  const hour = getKolkataHour();
   if (hour >= 19 && hour <= 23) return { label: 'Peak Rush · Usually very busy', isBusy: true };
   if (hour >= 13 && hour <= 15) return { label: 'Lunch Rush · Moderately busy', isBusy: true };
   if (hour >= 10 && hour <= 18) return { label: 'Usually not busy', isBusy: false };

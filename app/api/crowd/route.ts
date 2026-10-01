@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pandals } from '@/lib/pandals';
-import { getCurrentBusynessFromPattern, getCrowdVisual, PANDAL_CROWD_PROFILES } from '@/lib/popular-times';
+import {
+  getCurrentBusynessFromPattern,
+  getCrowdVisual,
+  PANDAL_CROWD_PROFILES,
+  getKolkataHour,
+  formatKolkataTime,
+} from '@/lib/popular-times';
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyAbhrgPRQVLCpYojXWwrWk7_oRpSZFOjxM';
 
@@ -93,7 +99,7 @@ function computeIndividualPandalCrowd(
     category: 'community' as const,
   };
 
-  const hour = now.getHours();
+  const hour = getKolkataHour(now);
 
   // 1. Time-of-day crowd pattern from Durga Puja footfall model (0 - 100)
   const patternBusyness = getCurrentBusynessFromPattern(pandalId, now);
@@ -111,7 +117,7 @@ function computeIndividualPandalCrowd(
   // Live traffic delay ratio: e.g. 1.05 -> normal, 1.25 -> 25% traffic delay
   const trafficSurge = Math.max(0.9, Math.min(1.35, congestionRatio));
 
-  // 4. Dynamic category baseline according to time of day
+  // 4. Dynamic category baseline according to time of day in Kolkata IST
   const isEvening = hour >= 17 && hour <= 23;
   const isNight = hour >= 23 || hour <= 2;
   const categoryBase =
@@ -138,7 +144,8 @@ function computeIndividualPandalCrowd(
     congestionRatio: Math.round(congestionRatio * 100) / 100,
     ...visual,
     source: 'google_maps_live_traffic',
-    updatedAt: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+    updatedAt: formatKolkataTime(now),
+    updatedAtIso: now.toISOString(),
   };
 }
 
@@ -181,7 +188,8 @@ export async function GET() {
     pandalCrowd,
     zoneCongestion: zoneRatios,
     dataSource: 'google_maps_live_traffic',
-    currentHour: now.getHours(),
+    currentHour: getKolkataHour(now),
+    currentTimeKolkata: formatKolkataTime(now),
   });
 }
 
@@ -211,7 +219,8 @@ export async function POST(req: NextRequest) {
         pandalId,
         busyness: crowdInfo.score,
         isLive: true,
-        hour: now.getHours(),
+        hour: getKolkataHour(now),
+        currentTimeKolkata: formatKolkataTime(now),
         ...crowdInfo,
       });
     }

@@ -64,6 +64,8 @@ export default function MapView() {
   const [crowdData,      setCrowdData]      = useState<CrowdData>({
     real: 0, simulated: 0, total: 0, points: [],
   });
+  const crowdDataRef = useRef<CrowdData>(crowdData);
+  crowdDataRef.current = crowdData;
 
   // ─── Initialize Map with Google Maps Road Vector Tiles & Momo I Am Focus ──
   useEffect(() => {
@@ -167,6 +169,7 @@ export default function MapView() {
       const res = await fetch('/api/crowd');
       const data = await res.json();
       setCrowdData(data);
+      crowdDataRef.current = data;
     } catch { /* silent */ } finally {
       pollTimerRef.current = setTimeout(pollCrowd, 6000);
     }
@@ -177,6 +180,77 @@ export default function MapView() {
     pollCrowd();
     return () => { if (pollTimerRef.current) clearTimeout(pollTimerRef.current); };
   }, [mapReady, pollCrowd]);
+
+  // ─── Dynamic Crowd Heatmap Renderer (Live Google Maps Traffic & Kolkata IST) ─
+  const renderCrowdHeatmap = useCallback(async (dataToUse?: CrowdData) => {
+    if (!mapRef.current || !heatGroupRef.current) return;
+    const L = (await import('leaflet')).default;
+    const { getCrowdVisual, formatKolkataTime } = await import('@/lib/popular-times');
+    const currentData = dataToUse || crowdDataRef.current;
+    const crowdDict = (currentData as any)?.pandalCrowd || {};
+
+    heatGroupRef.current.clearLayers();
+
+    for (const pandal of pandals) {
+      const liveInfo = crowdDict[pandal.id];
+      const score = liveInfo?.score ?? (currentData as any)?.pandalBusyness?.[pandal.id] ?? 20;
+      const visual = liveInfo ? liveInfo : getCrowdVisual(score, pandal.id);
+
+      // Scaled radius & opacity based on crowd score
+      const radius = Math.round(16 + (Math.min(100, Math.max(10, score)) / 100) * 26);
+      const fillOpacity = 0.35 + (Math.min(100, Math.max(10, score)) / 100) * 0.35;
+
+      const circle = L.circleMarker([pandal.lat, pandal.lng], {
+        radius,
+        stroke: true,
+        color: visual.strokeColor,
+        weight: 2,
+        fillColor: visual.fillColor,
+        fillOpacity,
+      });
+
+      // Dynamic popup callback: runs on click so it always evaluates live current time and data!
+      circle.bindPopup(() => {
+        const latestData = crowdDataRef.current;
+        const latestDict = (latestData as any)?.pandalCrowd || {};
+        const currentLive = latestDict[pandal.id];
+        const currentScore = currentLive?.score ?? (latestData as any)?.pandalBusyness?.[pandal.id] ?? score;
+        const currentVisual = currentLive ? currentLive : getCrowdVisual(currentScore, pandal.id);
+        const liveTimeKolkata = formatKolkataTime(new Date());
+
+        return `
+          <div style="font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;min-width:215px;padding:3px;">
+            <div style="font-weight:700;font-size:13px;color:#1F2937;">${pandal.name}</div>
+            <div style="margin-top:5px;display:flex;align-items:center;gap:6px;">
+              <span style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:${currentVisual.bg};border:1px solid ${currentVisual.border};color:${currentVisual.textColor};">
+                ${currentVisual.badgeText} (${currentScore}/100)
+              </span>
+              <span style="font-size:9.5px;color:#16A34A;font-weight:700;display:flex;align-items:center;gap:3px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#16A34A;display:inline-block;"></span>
+                LIVE
+              </span>
+            </div>
+            <div style="margin-top:6px;padding:7px 9px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;">
+              <div style="font-size:11px;font-weight:700;color:#1F2937;">👥 Est. ~${(currentVisual.estDevotees || 1000).toLocaleString()} devotees</div>
+              <div style="font-size:10px;color:#4B5563;margin-top:2px;">⏱️ Avg. Queue Wait: ~${currentVisual.waitMins} mins</div>
+              <div style="font-size:9.5px;color:#059669;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px;border-top:1px solid #E5E7EB;padding-top:4px;">
+                <span>📡 Live Google Maps Traffic · ${liveTimeKolkata} IST</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      circle.addTo(heatGroupRef.current);
+    }
+  }, []);
+
+  // Auto-refresh crowd heatmap circles when live crowd polling updates
+  useEffect(() => {
+    if (activePill === 'crowd') {
+      renderCrowdHeatmap(crowdData);
+    }
+  }, [crowdData, activePill, renderCrowdHeatmap]);
 
   // ─── Google Places Fetching for Category Pills ────────────────────────────
   const handleSelectPill = useCallback(async (pill: PillCategory) => {
@@ -199,49 +273,7 @@ export default function MapView() {
 
     // ── Handle "Crowd Heatmap" Pill (Green to Red visually representing crowd) ──
     if (pill === 'crowd') {
-      if (heatGroupRef.current) {
-        heatGroupRef.current.clearLayers();
-        const { getCrowdVisual } = await import('@/lib/popular-times');
-        const crowdDict = (crowdData as any).pandalCrowd || {};
-
-        for (const pandal of pandals) {
-          const liveInfo = crowdDict[pandal.id];
-          const score = liveInfo?.score ?? (crowdData as any).pandalBusyness?.[pandal.id] ?? 20;
-          const visual = liveInfo ? liveInfo : getCrowdVisual(score, pandal.id);
-
-          // Scaled radius & opacity based on crowd
-          const radius = Math.round(16 + (Math.min(100, Math.max(10, score)) / 100) * 26);
-          const fillOpacity = 0.35 + (Math.min(100, Math.max(10, score)) / 100) * 0.35;
-
-          const circle = L.circleMarker([pandal.lat, pandal.lng], {
-            radius,
-            stroke: true,
-            color: visual.strokeColor,
-            weight: 2,
-            fillColor: visual.fillColor,
-            fillOpacity,
-          });
-
-          // Press-and-hold / tap popup showcasing real-time Google Maps crowd data
-          circle.bindPopup(`
-            <div style="font-family:system-ui,sans-serif;min-width:190px;padding:3px;">
-              <div style="font-weight:700;font-size:13px;color:#1F2937;">${pandal.name}</div>
-              <div style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:${visual.bg};border:1px solid ${visual.border};color:${visual.textColor};display:inline-block;">
-                ${visual.badgeText} (${score}/100)
-              </div>
-              <div style="margin-top:6px;padding:6px 8px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;">
-                <div style="font-size:11px;font-weight:700;color:#1F2937;">👥 Est. ~${(visual.estDevotees || 1000).toLocaleString()} pandal hoppers</div>
-                <div style="font-size:10px;color:#4B5563;margin-top:2px;">⏱️ Avg. Queue Wait: ~${visual.waitMins} mins</div>
-                <div style="font-size:9px;color:#16A34A;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:3px;">
-                  <span>📡 Live Google Maps Traffic · ${liveInfo?.updatedAt || 'Real-time'}</span>
-                </div>
-              </div>
-            </div>
-          `);
-
-          circle.addTo(heatGroupRef.current);
-        }
-      }
+      renderCrowdHeatmap();
       return;
     }
 

@@ -152,8 +152,44 @@ export const PANDAL_MULTIPLIERS: Record<string, number> = Object.fromEntries(
   Object.entries(PANDAL_CROWD_PROFILES).map(([k, v]) => [k, v.multiplier])
 );
 
+/**
+ * Returns current hour (0-23) in Kolkata (Asia/Kolkata / IST, UTC+5:30)
+ */
+export function getKolkataHour(date: Date = new Date()): number {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    hour12: false,
+  });
+  return parseInt(formatter.format(date), 10) % 24;
+}
+
+/**
+ * Formats time in Indian Standard Time (Kolkata) with AM/PM (e.g. "07:35 PM")
+ */
+export function formatKolkataTime(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+}
+
+/**
+ * Returns YYYY-MM-DD in Asia/Kolkata timezone
+ */
+export function getKolkataDateString(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 export function getPujaDay(date: Date = new Date()): PujaDay {
-  const d = date.toISOString().split('T')[0];
+  const d = getKolkataDateString(date);
 
   // Check 2025 dates (27th September to 2nd October 2025)
   if (d === PUJA_DATES_2025.ashtami) return 'ashtami';
@@ -197,10 +233,10 @@ export function getHourlyPattern(pandalId: string, date: Date = new Date()): num
 }
 
 /**
- * Get the busyness score (0–100) for a pandal right now.
+ * Get the busyness score (0–100) for a pandal right now in Kolkata IST time.
  */
 export function getCurrentBusynessFromPattern(pandalId: string, date: Date = new Date()): number {
-  const hour = date.getHours();
+  const hour = getKolkataHour(date);
   const pattern = getHourlyPattern(pandalId, date);
   return pattern[hour];
 }

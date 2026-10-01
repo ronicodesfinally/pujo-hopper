@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Pandal } from '@/lib/types';
-import { getHourlyPattern, getCurrentBusynessFromPattern, getBusynessLabel } from '@/lib/popular-times';
+import { getHourlyPattern, getCurrentBusynessFromPattern, getBusynessLabel, getKolkataHour } from '@/lib/popular-times';
 import PopularityChart from './PopularityChart';
 import { Star, Clock, Ticket, ChevronRight, Tag, Plus, Check, Loader2, Navigation, XCircle } from 'lucide-react';
 import clsx from 'clsx';
@@ -27,7 +27,7 @@ export default function PandalCard({ pandal, inRoute, onClose, onGetDirections, 
   const now = new Date();
   const hourlyData = getHourlyPattern(pandal.id, now);
   const patternBusyness = getCurrentBusynessFromPattern(pandal.id, now);
-  const currentHour = now.getHours();
+  const currentHour = getKolkataHour(now);
 
   useEffect(() => {
     let cancelled = false;
