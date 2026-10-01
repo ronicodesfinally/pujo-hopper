@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
     for (let i = 0; i < allStops.length - 1; i++) {
       const legDist = haversineMeters(allStops[i][0], allStops[i][1], allStops[i + 1][0], allStops[i + 1][1]);
       totalMeters += legDist * 1.25;
-      const legPts = interpolateRoadCorridor(allStops[i], allStops[i + 1]);
+      const legPts = interpolateRoadCorridor(allStops[i], allStops[i + 1], travelMode);
       if (i > 0) legPts.shift();
       pathCoordinates.push(...legPts);
 

@@ -432,23 +432,73 @@ export default function MapView() {
 
       const routeCoords = data.coordinates;
       if (routeCoords && routeCoords.length > 0) {
-        // 1. Google Maps style background casing
-        L.polyline(routeCoords, {
-          color: '#1557B0',
-          weight: 9,
-          opacity: 0.5,
-          lineJoin: 'round',
-          lineCap: 'round',
-        }).addTo(group);
+        if (travelMode === 'walk') {
+          // Google Maps Authentic Pedestrian Walking Trail: Dotted route with soft halo
+          L.polyline(routeCoords, {
+            color: '#93C5FD',
+            weight: 10,
+            opacity: 0.5,
+            dashArray: '3, 9',
+            lineCap: 'round',
+          }).addTo(group);
 
-        // 2. Core navigation line (Vibrant Google Maps route blue)
-        L.polyline(routeCoords, {
-          color: travelMode === 'cab' ? '#1A73E8' : travelMode === 'metro' ? '#7C3AED' : '#2563EB',
-          weight: 6,
-          opacity: 1.0,
-          lineJoin: 'round',
-          lineCap: 'round',
-        }).addTo(group);
+          L.polyline(routeCoords, {
+            color: '#1D4ED8', // Deep vibrant Google walking blue
+            weight: 6,
+            opacity: 1.0,
+            dashArray: '3, 9', // Creates round pedestrian dots
+            lineCap: 'round',
+          }).addTo(group);
+        } else if (travelMode === 'cab' || travelMode === 'DRIVE') {
+          // Google Maps Solid Vehicular Highway Line
+          L.polyline(routeCoords, {
+            color: '#1557B0',
+            weight: 9,
+            opacity: 0.65,
+            lineJoin: 'round',
+            lineCap: 'round',
+          }).addTo(group);
+
+          L.polyline(routeCoords, {
+            color: '#1A73E8', // Signature Google Maps route blue
+            weight: 6,
+            opacity: 1.0,
+            lineJoin: 'round',
+            lineCap: 'round',
+          }).addTo(group);
+        } else if (travelMode === 'metro') {
+          // Metro Transit: Deep Royal Purple
+          L.polyline(routeCoords, {
+            color: '#4C1D95',
+            weight: 8,
+            opacity: 0.5,
+            lineJoin: 'round',
+            lineCap: 'round',
+          }).addTo(group);
+          L.polyline(routeCoords, {
+            color: '#7C3AED',
+            weight: 5,
+            opacity: 1.0,
+            lineJoin: 'round',
+            lineCap: 'round',
+          }).addTo(group);
+        } else {
+          // Bus: Warm Amber / Orange
+          L.polyline(routeCoords, {
+            color: '#78350F',
+            weight: 8,
+            opacity: 0.5,
+            lineJoin: 'round',
+            lineCap: 'round',
+          }).addTo(group);
+          L.polyline(routeCoords, {
+            color: '#D97706',
+            weight: 5,
+            opacity: 1.0,
+            lineJoin: 'round',
+            lineCap: 'round',
+          }).addTo(group);
+        }
 
         // 3. Start Marker (Your Location / Momo I Am)
         const startIcon = L.divIcon({

@@ -23,7 +23,8 @@ import {
   Bath,
   Star,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getTransitAvailability } from '@/lib/street-router';
 import clsx from 'clsx';
 
 interface Props {
@@ -183,6 +184,23 @@ export default function RoutePanel({
   const [showAdd, setShowAdd] = useState(false);
   const [addSearch, setAddSearch] = useState('');
   const [showSteps, setShowSteps] = useState(false);
+
+  // Evaluate transit feasibility (e.g. mute Metro/Bus if < 1.2 km or no direct lines)
+  const transitAvailability = getTransitAvailability(
+    pandals.map((p) => ({ lat: p.lat, lng: p.lng })),
+    { lat: 22.5904744, lng: 88.4082609 }
+  );
+
+  // Auto-switch away from muted mode to 'walk'
+  useEffect(() => {
+    if (mode === 'metro' && !transitAvailability.metro.available) {
+      setMode('walk');
+      onBuild('walk');
+    } else if (mode === 'bus' && !transitAvailability.bus.available) {
+      setMode('walk');
+      onBuild('walk');
+    }
+  }, [transitAvailability.metro.available, transitAvailability.bus.available, mode, onBuild]);
 
   const SUGGESTED_ROUTES = [
     {
@@ -373,28 +391,92 @@ export default function RoutePanel({
 
       {/* Transport mode selector */}
       <div>
-        <p className="text-inkMute text-[10px] uppercase tracking-wider mb-1 font-semibold">Travel Mode</p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-inkMute text-[10px] uppercase tracking-wider font-semibold">Travel Mode</p>
+          {(!transitAvailability.metro.available || !transitAvailability.bus.available) && pandals.length > 0 && (
+            <span className="text-[9px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1">
+              <span>⚠️</span>
+              {!transitAvailability.metro.available && !transitAvailability.bus.available
+                ? 'Transit muted (< 1.2 km)'
+                : !transitAvailability.metro.available
+                ? 'Metro muted (no direct line)'
+                : 'Bus muted'}
+            </span>
+          )}
+        </div>
+
         <div className="grid grid-cols-4 gap-1.5">
           {TRANSPORT_MODES.map((m) => {
             const Icon = m.icon;
+            const isMuted =
+              (m.id === 'metro' && !transitAvailability.metro.available) ||
+              (m.id === 'bus' && !transitAvailability.bus.available);
+
+            const subtitle =
+              m.id === 'metro' && !transitAvailability.metro.available
+                ? 'Not available'
+                : m.id === 'bus' && !transitAvailability.bus.available
+                ? 'Not available'
+                : m.est;
+
             return (
               <button
                 key={m.id}
-                onClick={() => handleModeChange(m.id)}
+                disabled={isMuted}
+                onClick={() => !isMuted && handleModeChange(m.id)}
+                title={
+                  isMuted
+                    ? m.id === 'metro'
+                      ? transitAvailability.metro.reason
+                      : transitAvailability.bus.reason
+                    : undefined
+                }
                 className={clsx(
-                  'rounded-xl p-2 text-center border transition-all flex flex-col items-center justify-center gap-0.5',
-                  mode === m.id
+                  'rounded-xl p-2 text-center border transition-all flex flex-col items-center justify-center gap-0.5 relative',
+                  isMuted
+                    ? 'bg-stone-100/90 border-stone-200 text-stone-400 cursor-not-allowed opacity-50 select-none'
+                    : mode === m.id
                     ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold ring-1 ring-blue-600 shadow-sm'
-                    : 'bg-cream border-inkFaint text-inkMid hover:border-lal/40'
+                    : 'bg-cream border-inkFaint text-inkMid hover:border-lal/40 active:scale-95'
                 )}
               >
-                <Icon size={14} className={mode === m.id ? 'text-blue-600' : 'text-inkMute'} />
+                <Icon
+                  size={14}
+                  className={
+                    isMuted
+                      ? 'text-stone-300'
+                      : mode === m.id
+                      ? 'text-blue-600'
+                      : 'text-inkMute'
+                  }
+                />
                 <div className="text-[11px] font-bold">{m.label}</div>
-                <div className="text-[9px] opacity-70 leading-tight">{m.est}</div>
+                <div
+                  className={clsx(
+                    'text-[8px] leading-tight text-center px-0.5 truncate max-w-full',
+                    isMuted ? 'text-stone-500 font-semibold italic' : 'opacity-70'
+                  )}
+                >
+                  {subtitle}
+                </div>
               </button>
             );
           })}
         </div>
+
+        {/* Informative notice when transit is muted */}
+        {pandals.length > 0 && (!transitAvailability.metro.available || !transitAvailability.bus.available) && (
+          <div className="mt-1.5 text-[10px] text-stone-600 bg-stone-100/80 border border-stone-200 rounded-xl px-2.5 py-1 flex items-center gap-1.5">
+            <span className="font-semibold text-stone-700">Notice:</span>
+            <span className="leading-snug">
+              {!transitAvailability.metro.available && !transitAvailability.bus.available
+                ? 'Metro and bus options are muted because this destination is within short walking distance (< 1.2 km).'
+                : !transitAvailability.metro.available
+                ? transitAvailability.metro.reason
+                : transitAvailability.bus.reason}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Transit Guidance Card */}
