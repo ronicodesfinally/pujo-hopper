@@ -112,13 +112,13 @@ export default function BottomSheet({
   return (
     <div
       className={clsx(
-        'absolute left-0 right-0 z-[999] bg-muslin',
+        'fixed left-0 right-0 z-[999] bg-muslin',
         'rounded-t-3xl flex flex-col',
         'transition-all duration-300 ease-out border-t border-inkFaint',
         HEIGHT_CLASS[height]
       )}
       style={{
-        bottom: 58, // Height of bottom nav
+        bottom: 'calc(58px + env(safe-area-inset-bottom, 0px))',
         boxShadow: '0 -4px 24px rgba(26,5,5,0.08)',
       }}
       onTouchStart={onTouchStart}

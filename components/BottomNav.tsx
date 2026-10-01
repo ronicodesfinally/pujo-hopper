@@ -18,7 +18,7 @@ interface Props {
 
 export default function BottomNav({ active, onChange }: Props) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[1001] bg-muslin border-t border-inkFaint shadow-card safe-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-[1002] bg-muslin/95 backdrop-blur-md border-t border-inkFaint shadow-card safe-bottom select-none">
       <div className="flex max-w-md mx-auto">
         {TABS.map(({ id, Icon, label }) => {
           const isActive = active === id;

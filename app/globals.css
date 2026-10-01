@@ -25,10 +25,18 @@
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--lal); border-radius: 2px; }
 
+html,
 body {
   background: var(--muslin);
   color: var(--ink);
   font-family: var(--font-inter);
+  height: 100%;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Leaflet overrides ───────────────────────────────────────────── */
@@ -264,7 +272,7 @@ body {
 }
 
 /* ── PWA safe area ───────────────────────────────────────────────── */
-.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px); }
 
 /* ── Route polyline glow ─────────────────────────────────────────── */
 .leaflet-interactive[stroke='#B5002E'] {
