@@ -35,6 +35,7 @@ interface Props {
   onReorder?: (pandals: Pandal[]) => void;
   onClear: () => void;
   onBuild: (mode?: string) => void;
+  onStartNav?: () => void;
 }
 
 const TRANSPORT_MODES = [
@@ -312,7 +313,13 @@ export default function RoutePanel({
             </div>
 
             <button
-              onClick={() => onBuild(mode)}
+              onClick={() => {
+                if (onStartNav) {
+                  onStartNav();
+                } else {
+                  onBuild(mode);
+                }
+              }}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full font-bold text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5"
             >
               <Navigation size={13} className="fill-white" />

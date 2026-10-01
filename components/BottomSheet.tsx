@@ -38,6 +38,7 @@ interface Props {
   onClearRoute: () => void;
   onBuildRoute: (pandals: Pandal[], travelMode?: string) => void;
   onPlaceAdded?: (item: { type: string; data: any }) => void;
+  onStartNav?: () => void;
 }
 
 export default function BottomSheet({
@@ -59,6 +60,7 @@ export default function BottomSheet({
   onClearRoute,
   onBuildRoute,
   onPlaceAdded,
+  onStartNav,
 }: Props) {
   const [height, setHeight] = useState<SheetHeight>('default');
   const dragStartY = useRef<number | null>(null);
@@ -177,6 +179,7 @@ export default function BottomSheet({
                 onReorder={onReorderRoute}
                 onClear={onClearRoute}
                 onBuild={(m) => onBuildRoute(routePandals, m)}
+                onStartNav={onStartNav}
               />
             </div>
           ) : (
