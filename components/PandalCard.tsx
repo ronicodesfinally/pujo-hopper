@@ -13,12 +13,13 @@ interface Props {
   onClose: () => void;
   onGetDirections: () => void;
   onRemoveDirections?: () => void;
+  onStartNav?: () => void;
   onExpand: () => void;
 }
 
 interface LiveBusyness { busyness: number; isLive: boolean; source: string; hour: number; }
 
-export default function PandalCard({ pandal, inRoute, onClose, onGetDirections, onRemoveDirections, onExpand }: Props) {
+export default function PandalCard({ pandal, inRoute, onClose, onGetDirections, onRemoveDirections, onStartNav, onExpand }: Props) {
   const stars = Math.round(pandal.rating);
   const [liveData, setLiveData] = useState<LiveBusyness | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,31 +165,45 @@ export default function PandalCard({ pandal, inRoute, onClose, onGetDirections, 
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2">
-        {inRoute && onRemoveDirections ? (
+      <div className="flex flex-col gap-2">
+        {/* Primary green Start button — Google Maps style */}
+        {onStartNav && (
           <button
-            onClick={onRemoveDirections}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all bg-red-50 border border-red-200 text-lal hover:bg-red-100 active:scale-95 shadow-sm"
+            onClick={onStartNav}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all bg-green-600 hover:bg-green-700 text-white active:scale-95 shadow-md"
           >
-            <XCircle size={16} />
-            Remove Direction
-          </button>
-        ) : (
-          <button
-            onClick={onGetDirections}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all bg-lal text-muslin hover:bg-lalDark active:scale-95 shadow-lal"
-          >
-            <Navigation size={15} className="fill-muslin" />
-            Directions
+            <Navigation size={16} className="fill-white" />
+            Start Navigation
           </button>
         )}
 
-        <button
-          onClick={onClose}
-          className="px-4 py-3 rounded-2xl bg-cream border border-inkFaint text-inkMid text-sm hover:bg-lalPale hover:border-lal/30 transition-all font-semibold"
-        >
-          Close
-        </button>
+        {/* Directions / Remove row */}
+        <div className="flex gap-2">
+          {inRoute && onRemoveDirections ? (
+            <button
+              onClick={onRemoveDirections}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl font-bold text-sm transition-all bg-red-50 border border-red-200 text-lal hover:bg-red-100 active:scale-95 shadow-sm"
+            >
+              <XCircle size={16} />
+              Remove
+            </button>
+          ) : (
+            <button
+              onClick={onGetDirections}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl font-bold text-sm transition-all bg-lal text-muslin hover:bg-lalDark active:scale-95 shadow-lal"
+            >
+              <Navigation size={15} className="fill-muslin" />
+              Directions
+            </button>
+          )}
+
+          <button
+            onClick={onClose}
+            className="px-4 py-2.5 rounded-2xl bg-cream border border-inkFaint text-inkMid text-sm hover:bg-lalPale hover:border-lal/30 transition-all font-semibold"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );

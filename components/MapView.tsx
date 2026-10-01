@@ -640,6 +640,18 @@ export default function MapView() {
     buildRoute(updated, 'walk');
   }, [buildRoute]);
 
+  // Start navigation immediately from a pandal card ("Start" button)
+  const handleStartNavDirect = useCallback(async (pandal: Pandal) => {
+    const updated = [pandal];
+    setRoutePandals(updated);
+    setSelectedPandal(null);
+    setSelectedPlace(null);
+    setActiveTab('route');
+    await buildRoute(updated, 'walk');
+    setIsNavigating(true);
+    mapRef.current?.flyTo([TEST_LAT, TEST_LNG], 17.5, { duration: 1.2 });
+  }, [buildRoute]);
+
   // Set single place directions
   const handleGetPlaceDirections = useCallback((place: SearchedPlace) => {
     const stop = placeToPandalStop(place);
@@ -819,6 +831,7 @@ export default function MapView() {
                 setIsNavigating(true);
                 mapRef.current?.flyTo([TEST_LAT, TEST_LNG], 17.5, { duration: 1.2 });
               }}
+              onStartNavDirect={handleStartNavDirect}
             />
           </>
         )}
