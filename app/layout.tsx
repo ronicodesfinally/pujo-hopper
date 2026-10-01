@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,7 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="bg-muslin text-inkDark overflow-hidden">{children}</body>
+      <body className="bg-muslin text-inkDark overflow-hidden">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
