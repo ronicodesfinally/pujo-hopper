@@ -696,63 +696,64 @@ export default function MapView() {
   );
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-muslin">
-      {/* Full-screen Google Maps canvas */}
-      <div ref={mapContainerRef} className="absolute inset-0 z-0" />
+    <div className="flex flex-col w-full h-full overflow-hidden bg-muslin">
+      {/* Map Viewport Area (Takes all space above BottomNav) */}
+      <div className="relative flex-1 w-full overflow-hidden">
+        {/* Full-screen Google Maps canvas */}
+        <div ref={mapContainerRef} className="absolute inset-0 z-0" />
 
-      {/* Top Google Maps Bar + Category Pills */}
-      <TopBar
-        crowdData={crowdData}
-        isTracking={isLocationLocked}
-        onToggleTracking={handleRecenter}
-        onPandalSelect={flyToPandal}
-        onLocationSelect={flyToLocation}
-        onPlaceSelect={handlePlaceSelect}
-        activePill={activePill}
-        onSelectPill={handleSelectPill}
-      />
+        {/* Top Google Maps Bar + Category Pills */}
+        <TopBar
+          crowdData={crowdData}
+          isTracking={isLocationLocked}
+          onToggleTracking={handleRecenter}
+          onPandalSelect={flyToPandal}
+          onLocationSelect={flyToLocation}
+          onPlaceSelect={handlePlaceSelect}
+          activePill={activePill}
+          onSelectPill={handleSelectPill}
+        />
 
-      {/* Google Maps Floating Recenter / My Location Button */}
-      <button
-        onClick={handleRecenter}
-        className={clsx(
-          'fixed right-3.5 z-[1000] w-11 h-11 rounded-full bg-muslin border border-inkFaint shadow-md flex items-center justify-center transition-all active:scale-90 hover:bg-cream',
-          isLocationLocked ? 'text-[#1A73E8]' : 'text-inkDark hover:text-[#1A73E8]'
-        )}
-        style={{
-          bottom: selectedPandal || selectedPlace || activeTab === 'route'
-            ? 'calc(50vh + 62px + env(safe-area-inset-bottom, 0px))'
-            : 'calc(218px + env(safe-area-inset-bottom, 0px))',
-        }}
-        title="Re-center to your location"
-        aria-label="Re-center to your location"
-      >
-        <LocateFixed size={20} className={isLocationLocked ? 'stroke-[2.5]' : 'stroke-2'} />
-      </button>
+        {/* Google Maps Floating Recenter / My Location Button */}
+        <button
+          onClick={handleRecenter}
+          className={clsx(
+            'absolute right-3.5 z-[998] w-11 h-11 rounded-full bg-muslin border border-inkFaint shadow-md flex items-center justify-center transition-all active:scale-90 hover:bg-cream',
+            isLocationLocked ? 'text-[#1A73E8]' : 'text-inkDark hover:text-[#1A73E8]'
+          )}
+          style={{
+            bottom: selectedPandal || selectedPlace || activeTab === 'route' ? 'calc(50vh + 16px)' : '168px',
+          }}
+          title="Re-center to your location"
+          aria-label="Re-center to your location"
+        >
+          <LocateFixed size={20} className={isLocationLocked ? 'stroke-[2.5]' : 'stroke-2'} />
+        </button>
 
-      {/* Sliding Bottom Sheet */}
-      <BottomSheet
-        activeTab={activeTab}
-        selectedPandal={selectedPandal}
-        selectedPlace={selectedPlace}
-        routePandals={routePandals}
-        allPandals={pandals}
-        routeInfo={routeInfo}
-        onClose={closePandal}
-        onClosePlace={closePlace}
-        onFlyTo={flyToPandal}
-        onGetDirections={handleGetDirections}
-        onGetPlaceDirections={handleGetPlaceDirections}
-        onAddToRoute={handleAddToRoute}
-        onAddPlaceToRoute={handleAddPlaceToRoute}
-        onReorderRoute={handleReorderRoute}
-        onRemoveFromRoute={removeFromRoute}
-        onClearRoute={handleClearRoute}
-        onBuildRoute={buildRoute}
-        onPlaceAdded={handlePlaceAdded}
-      />
+        {/* Sliding Bottom Sheet */}
+        <BottomSheet
+          activeTab={activeTab}
+          selectedPandal={selectedPandal}
+          selectedPlace={selectedPlace}
+          routePandals={routePandals}
+          allPandals={pandals}
+          routeInfo={routeInfo}
+          onClose={closePandal}
+          onClosePlace={closePlace}
+          onFlyTo={flyToPandal}
+          onGetDirections={handleGetDirections}
+          onGetPlaceDirections={handleGetPlaceDirections}
+          onAddToRoute={handleAddToRoute}
+          onAddPlaceToRoute={handleAddPlaceToRoute}
+          onReorderRoute={handleReorderRoute}
+          onRemoveFromRoute={removeFromRoute}
+          onClearRoute={handleClearRoute}
+          onBuildRoute={buildRoute}
+          onPlaceAdded={handlePlaceAdded}
+        />
+      </div>
 
-      {/* Google Maps 3-Tab Bottom Navigation */}
+      {/* Google Maps 3-Tab Bottom Navigation (Natural flex footer at the exact bottom) */}
       <BottomNav
         active={activeTab}
         onChange={(tab) => {
